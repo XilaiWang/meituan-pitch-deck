@@ -1,0 +1,877 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>明信片 · 美团 2026 AI 黑客松路演</title>
+<style>
+/* ============================================================
+   明信片 · 路演 deck
+   设计 read：情感型产品 keynote，温暖-高端中文语言，
+   美团橙 #FF6000 + 暖米白，明信片/信件隐喻。
+   单一浅色主题锁定 · 单一橙色强调锁 · 绿色仅语义状态 ·
+   Songti 衬线只用于情感金句 · 零 em-dash。
+   Dials: VARIANCE 7 / MOTION 7 / DENSITY 3
+   ============================================================ */
+:root{
+  --paper:#F4F1EA;        /* 暖米白主背景 */
+  --paper-2:#EDE8DF;      /* 略深的纸面，用于分区 */
+  --card:#FFFFFF;
+  --ink:#1C1A17;          /* 近黑暖墨，正文主色 */
+  --ink-2:#5E574F;        /* 次级 */
+  --ink-3:#9C938A;        /* 弱化 */
+  --brand:#FF6000;        /* 美团橙，唯一强调色 */
+  --brand-deep:#D24E00;   /* 橙字在浅底上的可读版本 */
+  --brand-soft:#FFEFE2;
+  --brand-line:#FFD6B4;
+  --green:#16A34A;        /* 仅语义：关怀已送达 */
+  --green-soft:#E6F4EB;
+  --line:rgba(28,26,23,.10);
+  --radius:24px; --radius-sm:14px; --radius-pill:999px;
+  --shadow:0 30px 64px -26px rgba(120,55,5,.30), 0 8px 22px -14px rgba(120,55,5,.20);
+  --device-shadow: drop-shadow(0 34px 44px rgba(110,52,8,.26));
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Segoe UI",sans-serif;
+  --serif:"Songti SC","STSong","Songti TC","Noto Serif CJK SC",serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--sans);
+  background:#161310;             /* 舞台外的暖深色 letterbox */
+  color:var(--ink);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+/* ── 舞台：固定 16:9，按窗口缩放，保证布局与导出一致 ── */
+#deck{position:fixed;inset:0;display:grid;place-items:center}
+#stage{
+  position:relative;width:1280px;height:720px;flex:none;
+  transform-origin:center center;
+  background:var(--paper);
+  border-radius:6px;
+  overflow:hidden;
+  box-shadow:0 40px 120px -30px rgba(0,0,0,.6);
+}
+/* 纸张细颗粒，固定、不可交互 */
+#stage::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:90;opacity:.5;
+  background-image:radial-gradient(rgba(120,80,30,.05) 1px,transparent 1px);
+  background-size:4px 4px;mix-blend-mode:multiply;
+}
+
+.slide{
+  position:absolute;inset:0;padding:64px 84px;
+  display:none;flex-direction:column;
+  opacity:0;
+}
+.slide.active{display:flex}
+
+/* ── 排版基元 ── */
+.kicker{
+  display:inline-flex;align-items:center;gap:9px;
+  font-size:16px;font-weight:600;letter-spacing:.04em;color:var(--brand-deep);
+}
+.kicker::before{content:"";width:22px;height:2px;background:var(--brand);border-radius:2px}
+.h1{font-size:66px;line-height:1.08;font-weight:800;letter-spacing:-.01em;color:var(--ink)}
+.h2{font-size:46px;line-height:1.16;font-weight:800;letter-spacing:-.01em;color:var(--ink)}
+.h3{font-size:30px;line-height:1.25;font-weight:700;color:var(--ink)}
+.lead{font-family:var(--serif);font-weight:600}
+.body{font-size:22px;line-height:1.62;color:var(--ink-2);max-width:31em}
+.tiny{font-size:16px;color:var(--ink-3);line-height:1.5}
+.em{color:var(--brand-deep)}
+.ink{color:var(--ink)}
+b,strong{font-weight:700;color:var(--ink)}
+
+/* 列表（非等分卡片，强排版） */
+.points{list-style:none;display:flex;flex-direction:column;gap:18px;margin-top:6px}
+.points li{display:flex;gap:14px;align-items:flex-start;font-size:22px;line-height:1.5;color:var(--ink-2)}
+.points li .dot{flex:none;margin-top:11px;width:8px;height:8px;border-radius:50%;background:var(--brand)}
+.points li b{color:var(--ink)}
+
+/* 标签 chip */
+.chip{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:var(--radius-pill);
+  font-size:15px;font-weight:600;background:var(--brand-soft);color:var(--brand-deep);border:1px solid var(--brand-line)}
+.chip--ghost{background:transparent;border-color:var(--line);color:var(--ink-2)}
+.chip--green{background:var(--green-soft);color:var(--green);border-color:rgba(22,163,74,.2)}
+
+/* 设备图 */
+/* 完整 CSS iPhone 边框（包裹纯屏幕截图 assets/screens/*），统一、不裁切、像前端 UI mockup */
+.device{
+  display:inline-block;padding:4px;line-height:0;
+  background:linear-gradient(155deg,#45454d 0%,#2b2b30 58%,#1d1d21 100%);
+  border-radius:32px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.15),
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 28px 50px -16px rgba(70,35,8,.36),
+    0 8px 18px -10px rgba(70,35,8,.24);
+}
+.device img{display:block;width:100%;border-radius:28px}
+.device--sm{padding:3px;border-radius:28px}
+.device--sm img{border-radius:25px}
+
+/* 单张明信片卡图（S7 两张明信片） */
+.cards2{display:flex;gap:44px;justify-content:center;align-items:flex-start}
+.pcimg{width:100%;border-radius:18px;box-shadow:var(--shadow);display:block;border:1px solid var(--line)}
+.cardcap{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:15px;font-size:17px;color:var(--ink-2);text-align:center}
+.cardtag{font-size:13px;font-weight:700;padding:4px 13px;border-radius:var(--radius-pill);color:#fff;flex:none}
+.cardtag--emo{background:var(--ink)}
+.cardtag--act{background:var(--brand)}
+
+/* 通用布局 */
+.row{display:flex;gap:56px;align-items:center;height:100%}
+.col{display:flex;flex-direction:column;justify-content:center}
+.grow{flex:1}
+.spacer{flex:1}
+.stack{display:flex;flex-direction:column}
+.gap-s{gap:10px}.gap-m{gap:18px}.gap-l{gap:30px}
+
+/* 页脚（页码 / 品牌 / 进度） */
+#chrome{position:absolute;left:0;right:0;bottom:0;height:0;z-index:80}
+#progress{position:absolute;left:0;bottom:0;height:3px;background:var(--brand);transition:width .5s cubic-bezier(.16,1,.3,1)}
+.foot{position:absolute;bottom:26px;font-size:13px;color:var(--ink-3);letter-spacing:.02em;z-index:80}
+.foot--l{left:84px}.foot--r{right:84px}
+.brandmark{display:inline-flex;align-items:center;gap:8px;font-weight:700;color:var(--ink)}
+.brandmark .seal{width:18px;height:18px;border-radius:5px;background:var(--brand);display:inline-block;
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.5)}
+
+/* ============ 各页型专属 ============ */
+
+/* S1 封面 */
+.cover{flex-direction:row;align-items:center;gap:40px;padding:0 0 0 96px}
+.cover .ctext{flex:1;display:flex;flex-direction:column;justify-content:center;gap:22px}
+.cover .title{font-size:128px;line-height:.96;font-weight:800;letter-spacing:.02em;color:var(--ink)}
+.cover .title .seal{display:inline-block;vertical-align:middle;margin-right:10px;
+  width:84px;height:84px;border-radius:20px;background:var(--brand);position:relative;top:-10px;
+  box-shadow:0 14px 30px -8px rgba(255,96,0,.6), inset 0 0 0 4px rgba(255,255,255,.35)}
+.cover .sub{font-size:30px;color:var(--ink-2);font-weight:600}
+.cover .tag{font-family:var(--serif);font-size:27px;color:var(--brand-deep);font-weight:600;line-height:1.5}
+.cover .meta{display:flex;align-items:center;gap:14px;margin-top:8px;color:var(--ink-3);font-size:16px}
+.cover .stageR{position:relative;width:560px;height:100%;flex:none;overflow:hidden}
+.cover .stageR::before{content:"";position:absolute;width:680px;height:680px;border-radius:50%;right:-180px;top:50%;
+  transform:translateY(-50%);background:radial-gradient(circle at 40% 40%,rgba(255,96,0,.20),rgba(255,96,0,0) 62%)}
+.cover .hero-device{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-7deg);width:300px;
+  padding:4px;background:linear-gradient(155deg,#45454d,#2b2b30 58%,#1d1d21);border-radius:32px;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.15),0 30px 54px -16px rgba(60,30,8,.40),0 10px 20px -10px rgba(60,30,8,.26)}
+.cover .hero-device img{width:100%;border-radius:28px;display:block}
+.cover .hero-back{position:absolute;top:50%;left:50%;transform:translate(-20%,-57%) rotate(6deg);width:236px;opacity:.55;
+  padding:3px;background:linear-gradient(155deg,#3a3a40,#222226);border-radius:30px;filter:drop-shadow(0 18px 28px rgba(110,52,8,.22))}
+.cover .hero-back img{width:100%;border-radius:27px;display:block}
+
+/* statement（问题 / 答案 / 收尾） */
+.statement{justify-content:center;gap:30px}
+.statement .big{font-size:62px;line-height:1.16;font-weight:800;letter-spacing:-.01em;max-width:18em}
+.three{display:flex;flex-direction:column;gap:0;margin-top:6px;border-top:1px solid var(--line)}
+.three .item{display:grid;grid-template-columns:64px 1fr;gap:22px;align-items:center;padding:26px 4px;border-bottom:1px solid var(--line)}
+.three .num{font-family:var(--serif);font-size:40px;font-weight:700;color:var(--brand);line-height:1}
+.three .txt{font-size:28px;font-weight:600;color:var(--ink)}
+.three .txt span{display:block;font-size:19px;font-weight:500;color:var(--ink-3);margin-top:5px}
+
+/* stat（市场页） */
+.stat{justify-content:center;align-items:flex-start;gap:24px}
+.stat .num{font-size:148px;line-height:.9;font-weight:800;letter-spacing:-.02em;color:var(--brand);font-feature-settings:"tnum"}
+.stat .num small{font-size:54px;font-weight:700;color:var(--ink);margin-left:8px}
+.stat .cap{font-size:30px;font-weight:700;color:var(--ink);max-width:20em}
+.statgrid{display:flex;gap:18px;margin-top:18px}
+.statgrid .cell{flex:1;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-sm);padding:20px 22px}
+.statgrid .cell .v{font-size:32px;font-weight:800;color:var(--ink)}
+.statgrid .cell .k{font-size:16px;color:var(--ink-2);margin-top:5px;line-height:1.4}
+.src{font-size:14px;color:var(--ink-3);margin-top:14px}
+
+/* split：左文右机 / 右文左机 */
+.split .row{align-items:center}
+.split .text{flex:1;display:flex;flex-direction:column;justify-content:center;gap:22px}
+.split .visual{flex:none;display:flex;align-items:center;justify-content:center;position:relative}
+.split .visual .device img{width:300px}
+.callout{position:absolute;background:var(--card);border:1px solid var(--brand-line);border-radius:12px;
+  padding:10px 14px;box-shadow:var(--shadow);font-size:15px;font-weight:600;color:var(--ink);white-space:nowrap}
+.callout .k{color:var(--brand-deep);font-size:13px;display:block;font-weight:700}
+.callout::after{content:"";position:absolute;width:9px;height:9px;background:var(--card);border:1px solid var(--brand-line);
+  border-left:0;border-top:0;transform:rotate(45deg)}
+
+/* filmstrip：多设备排列 */
+.filmstrip{display:flex;gap:22px;align-items:flex-end;justify-content:center}
+.filmstrip .device{flex:none}
+.filmstrip .device img{width:182px}
+.filmstrip .fwrap{display:flex;flex-direction:column;align-items:center;gap:0}
+.filmstrip .cap{text-align:center;font-size:15px;color:#FFFFFF;margin-top:10px;font-weight:600}
+
+/* dual：双端并置（单张含双机的截图，聚焦情感峰值） */
+.dual{flex-direction:column;justify-content:center;gap:18px;align-items:center;text-align:center}
+
+/* 架构图 */
+.arch{justify-content:center;gap:36px}
+.flow{display:flex;align-items:stretch;gap:0;margin-top:10px}
+.node{flex:1;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 18px;
+  display:flex;flex-direction:column;gap:8px;position:relative;text-align:center;align-items:center}
+.node .skill{font-size:13px;font-family:ui-monospace,Menlo,monospace;color:var(--brand-deep);font-weight:700}
+.node .nm{font-size:19px;font-weight:700;color:var(--ink)}
+.node .ds{font-size:13px;color:var(--ink-3);line-height:1.4}
+.node.io{background:var(--paper-2);border-style:dashed}
+.arrow{flex:none;align-self:center;width:46px;display:flex;align-items:center;justify-content:center;color:var(--brand)}
+.arrow svg{width:28px;height:28px}
+.trace-rail{margin-top:8px;display:flex;align-items:center;gap:12px;background:var(--ink);color:#F4F1EA;
+  border-radius:12px;padding:14px 20px;font-family:ui-monospace,Menlo,monospace;font-size:14px}
+.trace-rail .lab{color:#FFB27A;font-weight:700}
+.trace-rail .seg{opacity:.85}
+
+/* 业务两层 */
+.biz{justify-content:center;gap:24px}
+.layers{display:flex;flex-direction:column;gap:18px;margin-top:6px}
+.layer{display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:26px 30px}
+.layer .badge{width:50px;height:50px;border-radius:14px;background:var(--brand-soft);color:var(--brand-deep);
+  display:grid;place-items:center;font-size:24px;font-weight:800}
+.layer .ttl{font-size:24px;font-weight:700;color:var(--ink)}
+.layer .dsc{font-size:17px;color:var(--ink-2);margin-top:5px;line-height:1.45}
+.layer .price{font-size:30px;font-weight:800;color:var(--brand-deep);white-space:nowrap}
+.layer .price small{font-size:16px;color:var(--ink-3);font-weight:600}
+.why{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+.why .chip{font-size:16px;padding:9px 16px}
+
+/* 订阅分层价格阶梯（S14） */
+.tiers{display:flex;gap:13px}
+.tier{flex:1;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-sm);padding:15px 15px;position:relative}
+.tier{cursor:pointer;transition:box-shadow .2s,transform .15s}
+.tier:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.tier--on{border-color:var(--brand);box-shadow:var(--shadow);background:var(--brand-soft);cursor:default}
+.tier--on:hover{transform:none}
+.tier .tbadge{position:absolute;top:-10px;left:15px;background:var(--brand);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:var(--radius-pill)}
+.tier .tn{font-size:15px;font-weight:700;color:var(--ink-2)}
+.tier .tp{font-size:25px;font-weight:800;color:var(--ink);margin:3px 0 6px}
+.tier .tp small{font-size:13px;font-weight:600;color:var(--ink-3)}
+.tier--on .tp{color:var(--brand-deep)}
+.tier .td{font-size:12.5px;color:var(--ink-3);line-height:1.4}
+
+/* 三年增长 + 关键指标（S15 财务页） */
+.growth{display:flex;align-items:stretch;gap:0;margin-top:6px}
+.gyear{flex:1;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-sm);padding:20px 18px;text-align:center}
+.gyear--peak{background:var(--brand-soft);border-color:var(--brand-line)}
+.gy{font-size:15px;color:var(--ink-3);font-weight:600}
+.gc{font-size:28px;font-weight:800;color:var(--ink);margin:6px 0}
+.gm{font-size:13px;color:var(--ink-2);line-height:1.45}
+.gbig{font-size:23px;font-weight:800;color:var(--brand-deep);margin-top:10px}
+.gbig small{display:block;font-size:12px;color:var(--ink-3);font-weight:600;margin-top:2px}
+.garrow{align-self:center;color:var(--brand);font-size:24px;padding:0 12px;font-weight:700}
+.metrics{display:flex;gap:13px;margin-top:6px}
+.metric{flex:1;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px 8px}
+.metric b{display:block;font-size:24px;font-weight:800;color:var(--brand-deep)}
+.metric span{font-size:13px;color:var(--ink-2)}
+
+/* 成本对比（S15） */
+.cost-col{flex:1;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden}
+.cost-col--us{border-color:var(--brand-line);background:var(--brand-soft)}
+.cost-hd{display:flex;align-items:center;gap:10px;padding:16px 22px;border-bottom:1px solid var(--line);font-size:20px;font-weight:700;color:var(--ink)}
+.cost-row{display:flex;justify-content:space-between;align-items:center;padding:12px 22px;border-bottom:1px solid var(--line);font-size:15px;color:var(--ink-2)}
+.cost-row:last-of-type{border-bottom:0}
+.cost-row b{font-size:18px;color:var(--ink)}
+.cost-note{padding:10px 22px;font-size:12px;color:var(--ink-3);line-height:1.4;border-top:1px solid var(--line)}
+
+/* 谁需要（S16）*/
+.fit-box{flex:1;min-width:150px;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px 10px}
+.fit-box--on{background:var(--brand-soft);border-color:var(--brand-line)}
+.fit-num{display:block;font-size:28px;font-weight:800;color:var(--ink)}
+.fit-label{display:block;font-size:14px;color:var(--ink-2);margin-top:4px;line-height:1.45}
+
+/* 伦理三线 */
+.ethic .lines{display:flex;flex-direction:column;gap:16px;margin-top:6px}
+.eline{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:flex-start;padding:18px 0;border-bottom:1px solid var(--line)}
+.eline:last-child{border-bottom:0}
+.eline .tag{font-size:15px;font-weight:700;color:#fff;background:var(--ink);border-radius:var(--radius-pill);padding:6px 14px;white-space:nowrap;align-self:center}
+.eline .t{font-size:24px;font-weight:700;color:var(--ink)}
+.eline .d{font-size:17px;color:var(--ink-2);margin-top:4px;line-height:1.45}
+
+/* 收尾 */
+.closing{justify-content:center;align-items:center;text-align:center;gap:34px;position:relative}
+.closing .quote{font-family:var(--serif);font-size:50px;line-height:1.42;font-weight:600;color:var(--ink);max-width:20em}
+.closing .quote .em{color:var(--brand-deep)}
+.closing .sig{display:flex;align-items:center;gap:14px;color:var(--ink-2);font-size:18px}
+.closing .sig .seal{width:22px;height:22px;border-radius:6px;background:var(--brand)}
+.closing .thanks{font-family:var(--serif);font-size:24px;color:var(--ink-3)}
+
+/* 进入态：reveal 元素初始 */
+.r{will-change:transform,opacity}
+
+/* ── 帮助/缩放提示（只在非全屏首屏短暂出现）── */
+#hint{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:200;
+  background:rgba(20,16,12,.78);color:#F4F1EA;font-size:13px;padding:8px 16px;border-radius:var(--radius-pill);
+  font-family:var(--sans);backdrop-filter:blur(8px);transition:opacity .6s;letter-spacing:.02em}
+
+/* 导出/打印态：去掉舞台缩放与 letterbox（由 ?print 触发，单页一屏） */
+body.print{background:#fff;overflow:visible}
+body.print #hint{display:none}
+@media print{
+  body{background:#fff}
+  #hint,#chrome{display:none}
+}
+</style>
+</head>
+<body>
+<div id="deck">
+  <div id="stage">
+
+    <!-- ░░ S1 封面 ░░ -->
+    <section class="slide cover" data-anim="cover">
+      <div class="ctext">
+        <span class="kicker r">美团 2026 AI 黑客松</span>
+        <h1 class="title r"><span class="seal"></span>明信片</h1>
+        <p class="sub r" style="font-size:25px">美团 AI 居家养老管家<br><span style="color:var(--ink-3)">给异地子女的生活翻译器</span></p>
+        <p class="tag r">把爸妈的日常，翻译成你能接住的关心。</p>
+        <div class="meta r"><span>现场真机 live demo，这份 deck 是导引与投影兜底</span></div>
+      </div>
+      <div class="stageR">
+        <div class="hero-back r"><img src="assets/screens/20_parent_timeline.png" alt=""></div>
+        <div class="hero-device r"><img src="assets/screens/06_feed.png" alt="明信片 feed"></div>
+      </div>
+    </section>
+
+    <!-- ░░ S2 问题 ░░ -->
+    <section class="slide statement" data-anim="stagger">
+      <span class="kicker r">问题</span>
+      <h2 class="big r">关心爸妈，<br>为什么这么难？</h2>
+      <div class="three">
+        <div class="item r"><span class="num">壹</span><span class="txt">想关心，却看不见他们的日常<span>电话里永远是「都挺好」</span></span></div>
+        <div class="item r"><span class="num">贰</span><span class="txt">看见了，又隔着几百公里帮不上<span>知道她药快没了，也只能干着急</span></span></div>
+        <div class="item r"><span class="num">叁</span><span class="txt">想多看一眼，又怕成了 24 小时盯梢<span>装摄像头、要定位，亲情不该是这样</span></span></div>
+      </div>
+    </section>
+
+    <!-- ░░ S3 市场 ░░ -->
+    <section class="slide stat" data-anim="stat">
+      <span class="kicker r">为什么是现在</span>
+      <!-- PATCH:market 数字与来源由核查工作流回填 -->
+      <div class="r" style="display:flex;align-items:flex-end;gap:18px">
+        <span class="num" data-market="hero-num">3.2<small>亿</small></span>
+        <span style="font-size:46px;font-weight:800;color:var(--ink);line-height:1.4">占总人口 23.0%</span>
+      </div>
+      <p class="cap r" data-market="hero-cap">2025 年末，中国 60 岁及以上人口已达 3.23 亿。<br>他们越来越多独居、空巢，而子女在远方。</p>
+      <div class="statgrid r">
+        <div class="cell"><div class="v" data-market="c1v">近 6 成</div><div class="k" data-market="c1k">老年人口已空巢，大城市部分地区超 70%</div></div>
+        <div class="cell"><div class="v" data-market="c2v">7→30 万亿</div><div class="k" data-market="c2k">银发经济规模，2035 年有望占 GDP 约 10%</div></div>
+        <div class="cell"><div class="v" data-market="c3v">约 75%</div><div class="k" data-market="c3k">老年人慢病率，高血压居首，补已有处方是高频刚需</div></div>
+      </div>
+      <p class="src r" data-market="src">来源：国家统计局 2025 年人口数据；《中国银发经济发展报告（2024）》；国家卫健委、民政部口径</p>
+    </section>
+
+    <!-- ░░ S4 答案 ░░ -->
+    <section class="slide" style="justify-content:center;gap:20px" data-anim="stagger">
+      <span class="kicker r">我们的答案</span>
+      <div class="r" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <span class="chip" style="font-size:18px;padding:10px 20px">明信片</span>
+        <span style="font-size:18px;color:var(--ink-2)">美团 AI 居家养老管家</span>
+      </div>
+      <div class="r" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="color:var(--ink-2);font-size:18px">帮</span>
+        <span style="font-size:18px;font-weight:700;color:var(--ink)">异地子女</span>
+      </div>
+      <h2 class="big r" style="font-size:44px;line-height:1.3">感知<span style="color:var(--ink-3)">爸妈的生活</span><br>→ 托管<span style="color:var(--ink-3)">他们的日常需求</span><br>→ 让美团<span class="em">把事办成，把结果告诉你。</span></h2>
+      <p class="lead r" style="font-size:32px;line-height:1.4;color:var(--brand-deep)">不是监控，不是报警。<br>是一张会替你<span class="ink">开口、替你操心、替你办到</span>的明信片。</p>
+      <div class="r" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:0">
+        <span class="chip">👀 感知翻译 · 生活→明信片</span>
+        <span class="chip chip--green">🫂 托管照护 · 主动发现需求</span>
+        <span class="chip">🚀 履约闭环 · 美团替你办+反馈</span>
+      </div>
+      <p class="body r" style="font-size:20px;max-width:44em">药房即时送、外卖到家、家政上门——你把爸妈托给明信片，<b class="ink">美团强大的本地生活整合能力</b>替他们跑完全程，再回你一句"办妥了"。</p>
+    </section>
+
+    <!-- ░░ S5 入口 ░░ -->
+    <section class="slide split" data-anim="split">
+      <div class="row">
+        <div class="text">
+          <span class="kicker r">产品 · 入口</span>
+          <h2 class="h2 r">就长在你<br>每天用的美团里</h2>
+          <ul class="points">
+            <li class="r"><span class="dot"></span><span>复刻你熟悉的<b>「小团」AI 助手</b>首页</span></li>
+            <li class="r"><span class="dot"></span><span>「为你推荐」里多了一张 <b>关怀爸妈</b> 入口卡</span></li>
+            <li class="r"><span class="dot"></span><span>点开，就进入了爸妈那一侧的世界</span></li>
+          </ul>
+          <p class="body r" style="margin-top:8px">商业模式一句话：<b class="ink">先派评估师上门建档，再让 Agent <span style="white-space:nowrap">长期跟着他们的日常</span>。</b></p>
+        </div>
+        <div class="visual r">
+          <div class="device"><img src="assets/screens/01_onboarding.png" alt="小团首页与关怀爸妈入口"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ░░ S6 信任地基 ░░ -->
+    <section class="slide split" data-anim="film">
+      <span class="kicker r" style="margin-bottom:6px">信任地基</span>
+      <h2 class="h2 r" style="margin-bottom:6px">AI 不是凭空猜的</h2>
+      <p class="body r" style="margin-bottom:26px">关心要可信，得先有人当面把账对清楚。每一次提醒，背后都站着一位专业评估师。</p>
+      <div class="filmstrip r">
+        <div class="fwrap"><div class="device device--sm"><img src="assets/screens/03_service_form.png" alt=""></div><div class="cap">① 填信息 · 预约上门</div></div>
+        <div class="fwrap"><div class="device device--sm"><img src="assets/screens/05_service_done.png" alt=""></div><div class="cap">② 持证评估师派单</div></div>
+        <div class="fwrap"><div class="device device--sm"><img src="assets/screens/07_profile_top.png" alt=""></div><div class="cap">③ 上门建立档案</div></div>
+        <div class="fwrap"><div class="device device--sm"><img src="assets/screens/08_profile_meds.png" alt=""></div><div class="cap">④ 处方 / 作息 / 家庭</div></div>
+      </div>
+      <p class="tiny r" style="text-align:center;margin-top:22px">清点处方 · 记录作息 · 抄录既有诊断 · <b class="ink">本人签字授权</b>。健康标签来自医院既有就医记录，非 AI 判断；档案只能由评估师上门更新。</p>
+    </section>
+
+    <!-- ░░ S7 看见 ░░ -->
+    <section class="slide" data-anim="cards2" style="justify-content:center;gap:8px">
+      <span class="kicker r">看见 · 两张明信片</span>
+      <h2 class="h2 r" style="margin-bottom:6px">一张只让你打电话，一张才帮你做事</h2>
+      <div class="cards2 r">
+        <figure style="width:352px;margin:0">
+          <img class="pcimg" src="assets/shots/card_meal.png" alt="清淡午餐 · 情感明信片">
+          <figcaption class="cardcap"><span class="cardtag cardtag--emo">情感</span>连续吃得清淡，只建议「打个电话」，没有下单按钮</figcaption>
+        </figure>
+        <figure style="width:352px;margin:0">
+          <img class="pcimg" src="assets/shots/card_medicine.png" alt="降压药 · 行动明信片">
+          <figcaption class="cardcap"><span class="cardtag cardtag--act">行动</span>已有处方快用完，才出现「帮她在药店补一份」</figcaption>
+        </figure>
+      </div>
+      <p class="tiny r" style="text-align:center;margin-top:18px">清淡饮食只观察、不导向下单；药品只补已有处方。绝不把「吃得清淡」和「补药」绑成因果，这是法律红线。</p>
+    </section>
+
+    <!-- ░░ S8 洞察 ░░ -->
+    <section class="slide split" data-anim="split">
+      <div class="row">
+        <div class="text">
+          <span class="kicker r">洞察</span>
+          <h2 class="h2 r">「还能吃 4 天」<br>是算出来的，不是猜的</h2>
+          <ul class="points">
+            <li class="r"><span class="dot"></span><span>处方来自评估师档案：<b>降压药 · 每天 1 片 · 30 片/盒</b></span></li>
+            <li class="r"><span class="dot"></span><span>叠加妈妈每天的<b>服药打卡</b></span></li>
+            <li class="r"><span class="dot"></span><span>Agent <b>动态算出</b>余量，到点才提醒</span></li>
+          </ul>
+          <div class="r" style="display:inline-flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--brand-line);border-radius:14px;padding:13px 18px;font-size:18px;font-weight:700;color:var(--ink);width:fit-content;box-shadow:var(--shadow)">
+            <span>30 片 / 盒</span><span style="color:var(--ink-3);font-weight:600">每天 1 片</span><span style="color:var(--ink-3);font-weight:600">服药打卡校准</span>
+            <svg width="24" height="14" viewBox="0 0 24 14" fill="none" style="flex:none"><path d="M1 7h20m0 0l-5-5m5 5l-5 5" stroke="#FF6000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="em">还剩 4 天</span>
+          </div>
+          <p class="body r" style="margin-top:2px"><b class="ink">不推荐新药，不做诊断，</b>只算余量、只调度履约。同样的算法，高血脂药还剩 18 天，就不打扰你。</p>
+        </div>
+        <div class="visual r">
+          <div class="device"><img src="assets/screens/08_profile_meds.png" alt="日常服药余量" style="width:260px"></div>
+          <div class="callout" style="top:70px;left:-34px">还能吃<br><span class="k">动态计算</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ░░ S9 调度 · 技术证明 ░░ -->
+    <section class="slide split" data-anim="dual2">
+      <span class="kicker r">调度 · 技术证明</span>
+      <h2 class="h2 r" style="margin:6px 0 4px">每一步，都摊在台面上</h2>
+      <p class="body r" style="margin-bottom:20px;max-width:40em">每一步的数据来源，我们都如实标注：是本地样例，就写本地样例；是降级样例，绝不假装实时。</p>
+      <div class="row r" style="gap:46px;align-items:center;flex:1">
+        <div class="visual" style="flex:none"><div class="device"><img src="assets/screens/14_trace_agent.png" alt="OpenClaw Agent 轨迹" style="width:196px"></div></div>
+        <div class="visual" style="flex:none"><div class="device"><img src="assets/screens/09_nearby.png" alt="附近药店" style="width:196px"></div></div>
+        <div class="col gap-m" style="flex:1">
+          <div class="h3">OpenClaw Agent，全程可追溯</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span class="chip"><span style="width:8px;height:8px;border-radius:50%;background:#E8A830"></span>本地样例 · mock</span>
+            <span class="chip"><span style="width:8px;height:8px;border-radius:50%;background:#E8A830"></span>降级样例 · fallback</span>
+            <span class="chip chip--ghost"><span style="width:8px;height:8px;border-radius:50%;background:#B8B2A8"></span>实时接口 · real_api 尚未接入</span>
+            <span class="chip"><span style="width:8px;height:8px;border-radius:50%;background:#E87080"></span>模拟交易 · simulated</span>
+          </div>
+          <p class="tiny">同仁堂 620m / 老百姓 940m / 安心 1.0km，当前明确标注<b class="ink">降级样例</b>；real_api 已留位、尚未接入。我们选择诚实标注，而不是假装真实。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ░░ S10 闭环 ░░ -->
+    <section class="slide split" data-anim="split-r">
+      <div class="row">
+        <div class="visual r" style="position:relative;width:486px">
+          <div class="device" style="position:absolute;left:0;top:50%;transform:translateY(-53%) rotate(-5deg);z-index:1"><img src="assets/screens/10_booking_confirm.png" alt="确认下单" style="width:222px"></div>
+          <div class="device" style="position:absolute;right:0;top:50%;transform:translateY(-45%) rotate(5deg);z-index:2;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),0 38px 64px -18px rgba(70,35,8,.48),0 12px 24px -10px rgba(70,35,8,.30)"><img src="assets/screens/11_booking_success.png" alt="你帮了她" style="width:246px"></div>
+        </div>
+        <div class="text">
+          <span class="kicker r">闭环</span>
+          <h2 class="h2 r">点一下，<br>「你帮了她」</h2>
+          <ul class="points">
+            <li class="r"><span class="dot"></span><span>子女明确确认后，才生成订单</span></li>
+            <li class="r"><span class="dot"></span><span>门店、时间、订单号，<b>一应俱全</b></span></li>
+            <li class="r"><span class="dot"></span><span>演示版本，大大方方写明<b class="em">不会真下单、不扣钱</b></span></li>
+          </ul>
+          <p class="body r" style="margin-top:4px">该有的都有，唯独不会真的下单、真的扣钱。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ░░ S11 回扣 ░░ -->
+    <section class="slide dual" data-anim="dual">
+      <span class="kicker r" style="align-self:center">回扣 · 情感高潮</span>
+      <h2 class="h2 r" style="text-align:center;max-width:32em;font-size:38px">一边是「给妈妈点了一份」，一边是「小明关心你」</h2>
+      <div class="dualshot r" style="display:flex;gap:56px;align-items:flex-start;justify-content:center">
+        <figure style="margin:0;text-align:center">
+          <div class="device"><img src="assets/screens/12_feed_booked.png" style="width:200px" alt="子女端回写"></div>
+          <figcaption class="cardcap" style="justify-content:center;margin-top:12px;font-size:16px"><span class="cardtag cardtag--act">子女端</span>给妈妈在「同仁堂」点了一份</figcaption>
+        </figure>
+        <figure style="margin:0;text-align:center">
+          <div class="device"><img src="assets/screens/23_parent_notif.png" style="width:200px" alt="父母端通知"></div>
+          <figcaption class="cardcap" style="justify-content:center;margin-top:12px;font-size:16px"><span class="cardtag" style="background:var(--green)">父母端</span>妈妈收到「小明关心你」</figcaption>
+        </figure>
+      </div>
+      <p class="lead r" style="font-size:28px;color:var(--brand-deep)">不是「订单已创建」，是 <span class="ink">你帮了她</span>。演示版本，不会真下单。</p>
+    </section>
+
+    <!-- ░░ S12 双向 + 适老化 ░░ -->
+    <section class="slide split" data-anim="split-r">
+      <div class="row">
+        <div class="visual r" style="position:relative;width:486px">
+          <div class="device" style="position:absolute;left:0;top:50%;transform:translateY(-53%) rotate(-5deg);z-index:1"><img src="assets/screens/20_parent_timeline.png" alt="适老化时间轴" style="width:222px"></div>
+          <div class="device" style="position:absolute;right:0;top:50%;transform:translateY(-45%) rotate(5deg);z-index:2;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),0 38px 64px -18px rgba(70,35,8,.48),0 12px 24px -10px rgba(70,35,8,.30)"><img src="assets/screens/22_parent_request.png" alt="父母主动提需求" style="width:246px"></div>
+        </div>
+        <div class="text">
+          <span class="kicker r">不止单向</span>
+          <h2 class="h2 r">爸妈那边，<br>也能主动说一句</h2>
+          <ul class="points">
+            <li class="r"><span class="dot"></span><span><b>适老化时间轴</b>：大字、大按钮，今天的事一眼看完</span></li>
+            <li class="r"><span class="dot"></span><span>「想让小明帮忙」一句话，<b>反向变成一张明信片</b></span></li>
+            <li class="r"><span class="dot"></span><span>不会打字也没关系，<b>按住话筒说</b>就行</span></li>
+          </ul>
+          <p class="tiny r">药快没了、想吃清淡些、家里要收拾、身体不舒服，或者，就想聊聊。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ░░ S13 技术架构 ░░ -->
+    <section class="slide arch" data-anim="arch">
+      <div class="r"><span class="kicker">技术架构</span></div>
+      <h2 class="h2 r">一个 Agent，三个 Skill，全程可追溯</h2>
+      <div class="flow">
+        <div class="node io r"><div class="nm">生活事件</div><div class="ds">mock 服务<br>授权分享的日常</div></div>
+        <div class="arrow r"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12h16m0 0l-5-5m5 5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="node r"><div class="skill">life-postcard</div><div class="nm">翻译明信片</div><div class="ds">生活事件 → 温暖叙事 + 安全洞察</div></div>
+        <div class="arrow r"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12h16m0 0l-5-5m5 5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="node r"><div class="skill">nearby-care</div><div class="nm">附近关怀</div><div class="ds">归一化意图 → 搜索可用选项</div></div>
+        <div class="arrow r"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12h16m0 0l-5-5m5 5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="node r"><div class="skill">service-booking</div><div class="nm">服务下单</div><div class="ds">确认校验 → 模拟订单（可替换为真实履约）</div></div>
+      </div>
+      <div class="trace-rail r">
+        <span class="lab">OpenClaw trace</span>
+        <span class="seg">mock-events.load</span><span style="opacity:.4">›</span>
+        <span class="seg">life-postcard.generate</span><span style="opacity:.4">›</span>
+        <span class="seg">nearby-care.search</span><span style="opacity:.4">›</span>
+        <span class="seg">service-booking.create</span>
+        <span style="margin-left:auto;color:#FFB27A">每一步都带数据来源标签</span>
+      </div>
+      <p class="tiny r">档案依据（评估师长期建立）+ 本次关怀执行，两段轨迹分开记录。今天是本地确定性编排，接口可平滑替换为真实美团履约。</p>
+    </section>
+
+    <!-- ░░ S14 商业模式 ░░ -->
+    <section class="slide biz" data-anim="stagger">
+      <span class="kicker r">商业模式</span>
+      <h2 class="h2 r">两层收入，一条履约链</h2>
+      <div class="r">
+        <div class="tiny" style="margin-bottom:9px;font-weight:700;color:var(--ink)">① 订阅会员（月费 · 点击档位查看详情）</div>
+        <div class="tiers" id="tiers-row">
+          <div class="tier" data-tier="basic" onclick="selectTier('basic',event)"><div class="tn">基础版</div><div class="tp">¥99<small>/月</small></div></div>
+          <div class="tier tier--on" data-tier="care" onclick="selectTier('care',event)"><span class="tbadge">本次演示</span><div class="tn">关怀版</div><div class="tp">¥299<small>/月</small></div></div>
+          <div class="tier" data-tier="life" onclick="selectTier('life',event)"><div class="tn">生活版</div><div class="tp">¥699<small>/月</small></div></div>
+          <div class="tier" data-tier="nursing" onclick="selectTier('nursing',event)"><div class="tn">照护版</div><div class="tp">¥1299<small>起/月</small></div></div>
+        </div>
+      </div>
+      <div id="tier-detail" class="tier-detail r" style="background:var(--card);border:1px solid var(--brand-line);border-radius:var(--radius-sm);padding:14px 18px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center">
+        <span class="svc" style="font-size:15px;color:var(--ink-2)">含基础版 + 评估师上门建档(1次/年) · 电话关怀(1次/月) · AI明信片(不限量) · 服务预约入口</span>
+        <span class="fit" style="font-size:14px;color:var(--brand-deep);font-weight:600">适合：父母刚开始独居，子女在异地</span>
+      </div>
+      <div id="tier-rationale" class="r" style="font-size:14px;color:var(--ink-2);margin-top:6px;line-height:1.5"><b style="color:var(--brand-deep)">💡 定价逻辑：</b>¥299 上门建档是核心获客动作，一次建档锁定长期信任。单位城市模型可盈亏平衡。</div>
+      <div class="r" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:4px">
+        <span class="tiny" style="font-weight:700;color:var(--ink)">② 每一次关怀</span>
+        <span class="chip">走美团本地生活履约抽佣 · 药 / 餐 / 家政</span>
+        <span class="tiny">建档一次性获客，规模来自每次履约转化</span>
+      </div>
+      <div class="r" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:17px;font-weight:800;color:var(--brand-deep)">为什么是美团？医药即时零售份额 &gt;70% · 覆盖 25 万家药店</span>
+        <span class="chip chip--ghost">本地生活履约网络</span>
+        <span class="chip chip--ghost">即时配送</span>
+        <span class="chip chip--ghost">到家服务</span>
+        <span class="chip chip--ghost">小团 AI 入口</span>
+      </div>
+    </section>
+
+    <!-- ░░ S15 成本对比 ░░ -->
+    <section class="slide" style="justify-content:center;gap:16px" data-anim="stagger">
+      <span class="kicker r">成本对比</span>
+      <h2 class="h2 r">比请保姆，省多少？</h2>
+      <div class="r" style="display:flex;gap:30px;align-items:stretch">
+        <div class="cost-col">
+          <div class="cost-hd"><span style="font-size:24px">🧑‍⚕️</span><b>请住家保姆</b><span style="font-size:14px;color:var(--ink-3)">照顾老人</span></div>
+          <div class="cost-row"><span>一线城市（京沪广深）</span><b>¥6,000 – 10,000 /月</b></div>
+          <div class="cost-row"><span>二线城市（杭州/成都等）</span><b>¥4,500 – 7,000 /月</b></div>
+          <div class="cost-row"><span>持证养老护理员</span><b>¥8,000 – 15,000 /月</b></div>
+          <div class="cost-row"><span>中介年费 + 保险</span><b>≈ ¥3,000 – 5,000 /年</b></div>
+          <div class="cost-note">数据来源：58到家 · 天鹅到家 · 阿姨来了 · 家政行业协会 2024–2025 公开报价区间</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;flex:none">
+          <span style="font-size:48px;font-weight:800;color:var(--brand)">VS</span>
+          <span style="font-size:14px;color:var(--ink-3);writing-mode:vertical-lr">省 80–95%</span>
+        </div>
+        <div class="cost-col cost-col--us">
+          <div class="cost-hd"><span style="font-size:24px">🟠</span><b class="em">明信片</b><span style="font-size:14px;color:var(--ink-3)">美团 AI 居家养老管家</span></div>
+          <div class="cost-row"><span>关怀版（核心）</span><b class="em">¥299 /月</b></div>
+          <div class="cost-row"><span>基础版（入门）</span><b>¥99 /月</b></div>
+          <div class="cost-row"><span>生活版（含探访+跑腿）</span><b>¥699 /月</b></div>
+          <div class="cost-row"><span>照护版（含陪诊）</span><b>¥1,299 /月起</b></div>
+          <div class="cost-note">即使顶配照护版，仅相当于保姆费用的 15–25%</div>
+        </div>
+      </div>
+      <div class="r" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+        <span class="chip chip--green" style="font-size:15px;padding:9px 18px">✓ AI 24h 在线 · 保姆会请假</span>
+        <span class="chip chip--green" style="font-size:15px;padding:9px 18px">✓ 每笔服务可追溯 · 保姆无记录</span>
+        <span class="chip chip--green" style="font-size:15px;padding:9px 18px">✓ 美团履约网络加持 · 保姆孤身一人</span>
+        <span class="chip chip--green" style="font-size:15px;padding:9px 18px">✓ 从不请假/离职/过年回家</span>
+      </div>
+      <p class="tiny r" style="text-align:center;max-width:56em">明信片不是替代保姆——是让异地子女用不到 <b class="ink">1/10</b> 的成本，获得 <b class="ink">24 小时 AI 照护 + 美团本地生活全链路履约</b>。保姆解决"身边有人"，明信片解决"远方有心+有事真能办成"。</p>
+    </section>
+
+    <!-- ░░ S16 谁需要明信片 ░░ -->
+    <section class="slide" style="justify-content:center;gap:18px" data-anim="stagger">
+      <span class="kicker r">谁需要明信片</span>
+      <h2 class="h2 r">不是所有人都需要保姆。<br>但每个人都想让爸妈过得好一点。</h2>
+      <div class="r" style="display:flex;gap:0;align-items:stretch;margin-top:4px">
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--paper-2);border-radius:var(--radius-sm);padding:20px 24px">
+          <span style="font-size:38px">🏠</span>
+          <span style="font-size:16px;font-weight:700;color:var(--ink)">爸妈完全自理</span>
+          <span style="font-size:14px;color:var(--ink-3);text-align:center;line-height:1.5">身体还好，日常没问题<br>但一个人住，出了事没人知道</span>
+          <span style="font-size:13px;color:var(--ink-3);background:var(--card);padding:4px 12px;border-radius:var(--radius-pill)">偶尔打个电话 → 够了</span>
+        </div>
+        <div style="display:flex;align-items:center;padding:0 6px"><span style="font-size:28px;color:var(--brand);font-weight:800">· · ·</span></div>
+        <div style="flex:1.3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:var(--brand-soft);border:2px solid var(--brand);border-radius:var(--radius-sm);padding:22px 24px;position:relative">
+          <span style="position:absolute;top:-12px;background:var(--brand);color:#fff;font-size:12px;font-weight:700;padding:3px 12px;border-radius:var(--radius-pill)">👈 明信片在这里</span>
+          <span style="font-size:42px">💛</span>
+          <span style="font-size:17px;font-weight:800;color:var(--ink)">空巢 · 能自理 · 但需要被看见</span>
+          <span style="font-size:15px;color:var(--ink-2);text-align:center;line-height:1.55">爸妈生活没问题，但你在远方<br>不知道她今天吃了吗、药吃了吗、<br>家里冷不冷、有没有人说话</span>
+          <span style="font-size:14px;font-weight:700;color:var(--brand-deep);text-align:center">请保姆太贵、太早、不划算<br>但什么都不做，心里又放不下</span>
+        </div>
+        <div style="display:flex;align-items:center;padding:0 6px"><span style="font-size:28px;color:var(--brand);font-weight:800">· · ·</span></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--paper-2);border-radius:var(--radius-sm);padding:20px 24px">
+          <span style="font-size:38px">🧑‍⚕️</span>
+          <span style="font-size:16px;font-weight:700;color:var(--ink)">需要全天陪护</span>
+          <span style="font-size:14px;color:var(--ink-3);text-align:center;line-height:1.5">行动不便、失能、失智<br>需要物理上有人在身边</span>
+          <span style="font-size:13px;color:var(--ink-3);background:var(--card);padding:4px 12px;border-radius:var(--radius-pill)">请保姆 / 养老院 → 该请就请</span>
+        </div>
+      </div>
+      <div class="r" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+        <div class="fit-box"><span class="fit-num">~3.2 亿</span><span class="fit-label">60 岁以上人口中<br>约 90% 处于自理阶段</span></div>
+        <div class="fit-box"><span class="fit-num">70%+</span><span class="fit-label">子女在异地<br>无法日常照看</span></div>
+        <div class="fit-box fit-box--on"><span class="fit-num">¥299/月</span><span class="fit-label">一杯咖啡的日单价<br>换一个月的心安</span></div>
+        <div class="fit-box"><span class="fit-num">0–1 次/年</span><span class="fit-label">当前干预频率<br>（出事了才知道）</span></div>
+      </div>
+      <p class="tiny r" style="text-align:center;max-width:56em">明信片填补的是<b class="ink">「自理」和「全天陪护」之间</b>的巨大空白——<b class="ink">爸妈不需要人伺候，但需要有人知道。</b>知道她今天好吗、药还有吗、降压药快吃完了提醒你、想吃清淡的替你点上。不是替代保姆，是让 <b class="ink">¥299 先解决 80% 的焦虑</b>。</p>
+    </section>
+
+    <!-- ░░ S17 财务测算 ░░ -->
+    <section class="slide" data-anim="fin" style="justify-content:center;gap:18px">
+      <span class="kicker r">财务测算 · 商赛模型</span>
+      <h2 class="h2 r">三年，跑通单位城市盈利模型</h2>
+      <div class="growth">
+        <div class="gyear"><div class="gy">第 1 年</div><div class="gc">3 城</div><div class="gm">付费 2 万<br>ARPU 420 元/月</div></div>
+        <div class="garrow">→</div>
+        <div class="gyear"><div class="gy">第 2 年</div><div class="gc">10 城</div><div class="gm">付费 12 万<br>ARPU 520 元/月</div></div>
+        <div class="garrow">→</div>
+        <div class="gyear gyear--peak"><div class="gy">第 3 年</div><div class="gc">30 城</div><div class="gm">付费 50 万<br>ARPU 600 元/月</div><div class="gbig">≈ 36 亿<small>订阅年收入</small></div></div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><b>&gt;25%</b><span>建档转化率</span></div>
+        <div class="metric"><b>&gt;15%</b><span>首单转化率</span></div>
+        <div class="metric"><b>&gt;95%</b><span>服务准时率</span></div>
+        <div class="metric"><b>&gt;75%</b><span>月留存率</span></div>
+        <div class="metric"><b>25-35%</b><span>平台综合毛利</span></div>
+      </div>
+      <p class="tiny r">商赛模型假设，实际按城市供给成本、平台抽佣与补贴策略调整。增值服务（陪诊 / 助浴 / 适老化改造）再贡献订阅收入的 20-30%。</p>
+    </section>
+
+    <!-- ░░ S18 伦理与边界 ░░ -->
+    <section class="slide split ethic" data-anim="split-r">
+      <div class="row">
+        <div class="visual r"><div class="device"><img src="assets/screens/21_parent_consent.png" alt="隐私授权" style="width:290px"></div></div>
+        <div class="text">
+          <span class="kicker r">伦理与边界</span>
+          <h2 class="h2 r" style="margin-bottom:6px">守住三条线</h2>
+          <div class="lines">
+            <div class="eline r"><span class="tag">可授权</span><div><div class="t">主动授权，随时可关</div><div class="d">妈妈一拨开关，子女端立刻清空；子女看不到聊天和实时位置</div></div></div>
+            <div class="eline r"><span class="tag">不诊断</span><div><div class="t">只补已有处方</div><div class="d">从不推荐新药、不做诊断，更不把「吃得清淡」和「买药」绑因果</div></div></div>
+            <div class="eline r"><span class="tag">非真交易</span><div><div class="t">模拟下单，诚实标注</div><div class="d">演示版本不会真下单、不扣钱，标签大方写在屏幕上</div></div></div>
+          </div>
+          <p class="tiny r" style="margin-top:14px"><b class="ink">服务过程可追溯：</b>GPS 签到 · 节点打卡 · 图像查重 · 人工抽检 · 异常一键转人工。让信任建立在证据链上，而非服务人员自觉。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ░░ S19 收尾 ░░ -->
+    <section class="slide closing" data-anim="closing">
+      <span class="kicker r" style="align-self:center">明信片 · 让关心有处可落</span>
+      <p class="quote r" style="text-align:center">妈妈在喝粥。<br>你在三百公里外，<br>帮她补了一盒<span class="em">她日常在吃的降压药。</span></p>
+      <div class="sig r"><span class="seal"></span><span class="brandmark"><b>明信片</b></span><span>·</span><span>美团 2026 AI 黑客松</span></div>
+      <p class="thanks r">谢谢。接下来，真机见。</p>
+    </section>
+
+  </div>
+  <div id="chrome"><div id="progress"></div></div>
+  <div class="foot foot--l"><span class="brandmark"><span class="seal"></span>明信片</span></div>
+  <div class="foot foot--r"><span id="counter">01 / 17</span></div>
+</div>
+<div id="hint">← / → 翻页 · 空格前进 · F 全屏 · 数字跳页</div>
+
+<script src="assets/vendor/gsap.min.js"></script>
+<script>
+(function(){
+  var stage = document.getElementById('stage');
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total = slides.length;
+  var i = 0;
+  var REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var counter = document.getElementById('counter');
+  var progress = document.getElementById('progress');
+  var hint = document.getElementById('hint');
+
+  // ── S14 档位切换 ──
+  var TIER_DATA = {
+    basic: {services:'AI照护档案 · 智能服务推荐 · 服药提醒 · 月度健康报告',fit:'适合：想先试试的家庭',rationale:'¥99 覆盖 AI 基础设施成本，以低价大规模获客，为升级留入口。'},
+    care: {services:'含基础版 + 评估师上门建档(1次/年) · 电话关怀(1次/月) · AI明信片(不限量) · 服务预约入口',fit:'适合：父母刚开始独居，子女在异地',rationale:'¥299 上门建档是核心获客动作，一次建档锁定长期信任。单位城市模型可盈亏平衡。'},
+    life: {services:'含关怀版 + 上门探访(2次/月) · 助洁(2次/月) · 跑腿代办(4次/月) · 周报+健康趋势',fit:'适合：父母需要日常搭把手',rationale:'¥699 服务成本占比约60%，平台毛利约25%。每次上门探访可带动2-3单履约转化。'},
+    nursing: {services:'含生活版 + 半天陪诊(2次/月) · 复诊管理 · 人工客服优先通道 · 适老化改造咨询',fit:'适合：父母有慢性病，需定期就医支持',rationale:'¥1299+ 专业服务人力成本高，但客单价和留存率最高。增值服务再贡献订阅收入20-30%。'}
+  };
+  window.selectTier = function(tier, ev){
+    if(ev) ev.stopPropagation();
+    var rows = document.querySelectorAll('#tiers-row .tier');
+    for(var t=0;t<rows.length;t++) rows[t].classList.remove('tier--on');
+    var sel = document.querySelector('#tiers-row .tier[data-tier="'+tier+'"]');
+    if(sel) sel.classList.add('tier--on');
+    var d = TIER_DATA[tier];
+    var detail = document.getElementById('tier-detail');
+    if(detail) detail.innerHTML = '<span class="svc" style="font-size:15px;color:var(--ink-2)">'+d.services+'</span><span class="fit" style="font-size:14px;color:var(--brand-deep);font-weight:600">'+d.fit+'</span>';
+    var rationale = document.getElementById('tier-rationale');
+    if(rationale) rationale.innerHTML = '<b style="color:var(--brand-deep)">定价逻辑：</b>'+d.rationale;
+  };
+
+  // 缩放舞台以适应窗口（保持 16:9，导出与现场一致）
+  function fit(){
+    var pad = 0;
+    var s = Math.min((window.innerWidth-pad)/1280, (window.innerHeight-pad)/720);
+    stage.style.transform = 'scale('+s+')';
+  }
+  window.addEventListener('resize', fit); fit();
+
+  function pad2(n){return (n<10?'0':'')+n;}
+
+  // 各页型进入动画编排：动画为叙事服务（揭示顺序 = 讲述顺序）。
+  // 全程只用 .from()（immediateRender 自管起止，先隐后显，不闪）；未被覆盖的元素保持自然可见，永不锁死在隐藏态。
+  function play(slide){
+    if(!window.gsap){return;}
+    var anim = slide.getAttribute('data-anim');
+    var all = slide.querySelectorAll('.r, .cards2 figure, .callout, .node, .arrow, .visual, .dualshot, .gyear, .garrow, .metric');
+    gsap.killTweensOf(all);
+    // 只复位 GSAP 动过的 transform/opacity，绝不动作者内联的布局样式（width/top/left/position）
+    gsap.set(all,{clearProps:'opacity,transform,translate,rotate,scale,x,y'});
+    if(REDUCE){ return; }                     // 偏好减弱动效：直接呈现自然态，不动画
+    var tl = gsap.timeline({defaults:{ease:'power3.out',overwrite:'auto'}});
+
+    if(anim==='cover'){
+      tl.from(slide.querySelectorAll('.ctext .r'),{y:26,opacity:0,duration:.7,stagger:.1},0)
+        .from(slide.querySelector('.hero-back'),{opacity:0,scale:.9,rotate:14,duration:1.0},.15)
+        .from(slide.querySelector('.hero-device'),{opacity:0,y:40,scale:.92,rotate:-14,duration:1.0,ease:'power4.out'},.3);
+      return;
+    }
+    if(anim==='stat'){
+      var num = slide.querySelector('.num');
+      tl.from(slide.querySelectorAll('.kicker'),{opacity:0,y:14,duration:.5},0)
+        .from(num.parentNode,{opacity:0,duration:.4},.12)
+        .from(num,{scale:.72,transformOrigin:'left center',duration:.8,ease:'back.out(1.1)'},.12)
+        .from(slide.querySelectorAll('.cap,.statgrid,.src'),{opacity:0,y:20,duration:.6,stagger:.12},'-=.35');
+      return;
+    }
+    if(anim==='split' || anim==='split-r'){
+      var visual = slide.querySelector('.visual');
+      var dir = anim==='split-r' ? -50 : 50;
+      tl.from(slide.querySelectorAll('.text .r'),{y:24,opacity:0,duration:.66,stagger:.08},0);
+      if(visual){ tl.from(visual,{x:dir,opacity:0,scale:.96,duration:.9,ease:'power4.out'},.1); }
+      var co = slide.querySelectorAll('.callout');
+      if(co.length){ tl.from(co,{opacity:0,scale:.8,duration:.45,stagger:.1,ease:'back.out(1.6)'},'-=.2'); }
+      return;
+    }
+    if(anim==='cards2'){
+      tl.from(slide.querySelectorAll('.kicker,.h2'),{opacity:0,y:16,duration:.5,stagger:.1},0)
+        .from(slide.querySelectorAll('.cards2 figure'),{y:30,opacity:0,duration:.72,stagger:.14,ease:'power3.out'},'-=.1')
+        .from(slide.querySelector('.tiny'),{opacity:0,y:12,duration:.5},'-=.2');
+      return;
+    }
+    if(anim==='film'){
+      tl.from(slide.querySelectorAll('.kicker,.h2,.body'),{opacity:0,y:18,duration:.5,stagger:.08},0)
+        .from(slide.querySelectorAll('.filmstrip .device'),{y:40,opacity:0,duration:.7,stagger:.12,ease:'power3.out'},'-=.1')
+        .from(slide.querySelectorAll('.tiny'),{opacity:0,y:12,duration:.5},'-=.2');
+      return;
+    }
+    if(anim==='dual'){
+      tl.from(slide.querySelectorAll('.kicker,.h2'),{opacity:0,y:18,duration:.55,stagger:.1},0)
+        .from(slide.querySelector('.dualshot'),{y:30,scale:.95,opacity:0,duration:.9,ease:'power4.out'},'-=.1')
+        .from(slide.querySelectorAll('.lead,.tiny'),{opacity:0,y:16,duration:.55,stagger:.1},'-=.3');
+      return;
+    }
+    if(anim==='dual2'){
+      tl.from(slide.querySelectorAll('.kicker,.h2,.body'),{opacity:0,y:18,duration:.5,stagger:.08},0)
+        .from(slide.querySelectorAll('.row .visual'),{y:30,opacity:0,duration:.7,stagger:.12},'-=.1')
+        .from(slide.querySelectorAll('.row .chip'),{x:18,opacity:0,duration:.4,stagger:.07},'-=.3')
+        .from(slide.querySelectorAll('.row .h3,.row .tiny'),{opacity:0,y:10,duration:.4},'<');
+      return;
+    }
+    if(anim==='arch'){
+      tl.from(slide.querySelectorAll('.kicker,.h2'),{opacity:0,y:16,duration:.5,stagger:.1},0)
+        .from(slide.querySelectorAll('.node'),{y:24,opacity:0,duration:.55,stagger:.12,ease:'power3.out'},'-=.05')
+        .from(slide.querySelectorAll('.arrow'),{opacity:0,scale:.5,duration:.35,stagger:.12},'-=.6')
+        .from(slide.querySelector('.trace-rail'),{opacity:0,y:16,duration:.5},'-=.05')
+        .from(slide.querySelector('.tiny'),{opacity:0,duration:.4},'-=.1');
+      return;
+    }
+    if(anim==='fin'){
+      tl.from(slide.querySelectorAll('.kicker,.h2'),{opacity:0,y:16,duration:.5,stagger:.1},0)
+        .from(slide.querySelectorAll('.gyear'),{y:24,opacity:0,duration:.6,stagger:.14,ease:'power3.out'},'-=.05')
+        .from(slide.querySelectorAll('.garrow'),{opacity:0,scale:.5,duration:.3,stagger:.14},'-=.7')
+        .from(slide.querySelectorAll('.metric'),{y:16,opacity:0,duration:.45,stagger:.08},'-=.15')
+        .from(slide.querySelector('.tiny'),{opacity:0,duration:.4},'-=.1');
+      return;
+    }
+    if(anim==='closing'){
+      tl.from(slide.querySelectorAll('.kicker'),{opacity:0,duration:.5},0)
+        .from(slide.querySelector('.quote'),{opacity:0,y:24,duration:1.0,ease:'power3.out'},.2)
+        .from(slide.querySelectorAll('.sig,.thanks'),{opacity:0,y:14,duration:.6,stagger:.15},'-=.3');
+      return;
+    }
+    // 默认 stagger
+    tl.from(slide.querySelectorAll('.r'),{opacity:0,y:22,duration:.6,stagger:.09},0);
+  }
+
+  function show(n){
+    n = Math.max(0, Math.min(total-1, n));
+    if(slides[i]) slides[i].classList.remove('active');
+    i = n;
+    var s = slides[i];
+    s.classList.add('active');
+    gsap.set(s,{opacity:1});
+    counter.textContent = pad2(i+1)+' / '+pad2(total);
+    progress.style.width = ((i+1)/total*100)+'%';
+    play(s);
+  }
+
+  function next(){ show(i+1); }
+  function prev(){ show(i-1); }
+
+  document.addEventListener('keydown', function(e){
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){ e.preventDefault(); next(); }
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); prev(); }
+    else if(e.key==='Home'){ show(0); }
+    else if(e.key==='End'){ show(total-1); }
+    else if(e.key==='f'||e.key==='F'){ if(!document.fullscreenElement){document.documentElement.requestFullscreen();}else{document.exitFullscreen();} }
+    else if(e.key>='1'&&e.key<='9'){ show(parseInt(e.key,10)-1); }
+    else if(e.key==='0'){ show(9); }
+  });
+  // 点击右/左半屏翻页（演示友好）
+  document.getElementById('deck').addEventListener('click', function(e){
+    if(e.clientX > window.innerWidth*0.5) next(); else prev();
+  });
+
+  // 深链：?slide=N（导出用）
+  var m = location.search.match(/slide=(\d+)/);
+  show(m ? parseInt(m[1],10)-1 : 0);
+
+  setTimeout(function(){ hint.style.opacity='0'; }, 4200);
+})();
+</script>
+</body>
+</html>

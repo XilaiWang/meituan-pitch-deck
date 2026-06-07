@@ -1,0 +1,5 @@
+assets/render/
+assets/render-live/
+assets/diag/
+*.pyc
+__pycache__
