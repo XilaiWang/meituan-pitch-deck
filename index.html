@@ -66,7 +66,7 @@ body{
   display:none;flex-direction:column;
   opacity:0;
 }
-.slide.active{display:flex}
+.slide.active{display:flex;opacity:1}
 
 /* ── 排版基元 ── */
 .kicker{
@@ -843,7 +843,7 @@ body.print #hint{display:none}
     i = n;
     var s = slides[i];
     s.classList.add('active');
-    gsap.set(s,{opacity:1});
+    if(window.gsap) gsap.set(s,{opacity:1});
     counter.textContent = pad2(i+1)+' / '+pad2(total);
     progress.style.width = ((i+1)/total*100)+'%';
     play(s);
